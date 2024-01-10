@@ -49,6 +49,8 @@ async fn run() -> Result<()> {
             redis_client: redis::Client::open(config.redis.url)?,
             voicevox_client: VoicevoxClient::new(config.voicevox.api_base),
             connected_guild_states: DashMap::new(),
+            speak_user_name: config.discord.speak_user_name,
+            speak_length_limit: config.discord.speak_length_limit,
         },
     )
     .await;

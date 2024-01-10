@@ -8,6 +8,7 @@ use serenity::{
     model::{channel::Message, id::GuildId},
     utils::ContentSafeOptions,
 };
+use crate::app_state;
 
 pub async fn build_read_text(
     ctx: &Context,
@@ -17,6 +18,7 @@ pub async fn build_read_text(
     last_msg: &Option<Message>,
 ) -> Result<String> {
     let author_name = build_author_name(ctx, msg).await;
+    let state = app_state::get(ctx).await?;
 
     let content = plain_content(ctx, msg);
     let content = replace_custom_emojis(&content);
@@ -27,17 +29,21 @@ pub async fn build_read_text(
     );
     let content = remove_url(&content);
 
-    let text = if should_read_author_name(msg, last_msg) {
-        format!("{}。{}", author_name, content)
+    let text = if state.speak_user_name {
+        if should_read_author_name(msg, last_msg) {
+            format!("{}。{}", author_name, content)
+        } else {
+            content
+        }
     } else {
         content
     };
 
     let text = replace_words_on_dict(conn, guild_id, &text).await?;
 
-    // 文字数を60文字に制限
-    if text.chars().count() > 60 {
-        Ok(text.chars().take(60 - 4).collect::<String>() + "、以下略")
+    // 文字数を制限
+    if text.chars().count() > state.speak_length_limit {
+        Ok(text.chars().take(state.speak_length_limit - 4).collect::<String>() + "、以下略")
     } else {
         Ok(text)
     }

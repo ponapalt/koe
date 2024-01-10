@@ -16,6 +16,8 @@ pub struct AppState {
     pub redis_client: redis::Client,
     pub voicevox_client: VoicevoxClient,
     pub connected_guild_states: DashMap<GuildId, ConnectedGuildState>,
+    pub speak_user_name: bool,
+    pub speak_length_limit: usize,
 }
 
 pub struct ConnectedGuildState {
